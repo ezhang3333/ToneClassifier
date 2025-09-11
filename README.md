@@ -1,4 +1,4 @@
-GPT-2 Sentiment Classifier
+GPT-2 Tone Classifier
 
 A Streamlit app that classifies movie/product reviews as Positive or Negative using GPT-2.
 Currently supports two modes:
