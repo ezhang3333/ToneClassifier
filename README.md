@@ -9,5 +9,7 @@ Currently supports two modes:
 Installation
 
 git clone https://github.com/ezhang3333/GPT-2.git
+
 pip install all packages from requirements.txt
+
 python -m streamlit run app.py
