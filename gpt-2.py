@@ -125,28 +125,49 @@ def tokenize_seq2seq(batch):
 
 
 # Fine-tune GPT2LMHeadModel in a causal seq2seq style
-def train_seq2seq(train_ds, lm: GPT2LMHeadModel):
-    tok_ds = train_ds.map(
+def train_seq2seq(train_ds, lm: GPT2LMHeadModel, seed=SEED):
+    # Split into train/validation
+    train_test = train_ds.train_test_split(test_size=0.1, seed=seed)
+    train_ds, val_ds = train_test["train"], train_test["test"]
+
+    tok_train = train_ds.map(
         tokenize_seq2seq,
         batched=True,
         remove_columns=[c for c in train_ds.column_names]
     )
+    tok_val = val_ds.map(
+        tokenize_seq2seq,
+        batched=True,
+        remove_columns=[c for c in val_ds.column_names]
+    )
+
     collator = DataCollatorWithPadding(TOKENIZER)
+
     args = TrainingArguments(
         output_dir="./seq2seq",
         per_device_train_batch_size=8,
-        learning_rate=2e-4,
-        num_train_epochs=1,
-        save_strategy="no",
-        logging_strategy="no",
+        gradient_accumulation_steps=4,
+        learning_rate=5e-5,            # smaller LR
+        weight_decay=0.01,
+        num_train_epochs=3,            # train longer
+        save_strategy="epoch",
+        logging_strategy="steps",
+        logging_steps=50,
+        evaluation_strategy="epoch",
+        load_best_model_at_end=True,
+        report_to="none",              # disable wandb if not used
     )
+
     trainer = Trainer(
         model=lm,
         args=args,
-        train_dataset=tok_ds,
+        train_dataset=tok_train,
+        eval_dataset=tok_val,
         data_collator=collator,
     )
+
     trainer.train()
+    return trainer
 
 
 # Tokenize for classification
@@ -166,28 +187,49 @@ def tokenize_clf(batch):
 
 
 #Fine-tune GPT2ForSequenceClassification
-def train_clf(train_ds: Dataset, model: GPT2ForSequenceClassification):
-    tok_ds = train_ds.map(
+def train_clf(train_ds: Dataset, model: GPT2ForSequenceClassification, seed=SEED):
+    # Split into train/validation
+    train_test = train_ds.train_test_split(test_size=0.1, seed=seed)
+    train_ds, val_ds = train_test["train"], train_test["test"]
+
+    tok_train = train_ds.map(
         tokenize_clf,
         batched=True,
         remove_columns=[c for c in train_ds.column_names]
     )
+    tok_val = val_ds.map(
+        tokenize_clf,
+        batched=True,
+        remove_columns=[c for c in val_ds.column_names]
+    )
+
     collator = DataCollatorWithPadding(TOKENIZER)
+
     args = TrainingArguments(
         output_dir="./clf",
         per_device_train_batch_size=8,
-        learning_rate=2e-4,
-        num_train_epochs=1,
-        save_strategy="no",
-        logging_strategy="no",
+        gradient_accumulation_steps=4,
+        learning_rate=5e-5,
+        weight_decay=0.01,
+        num_train_epochs=3,
+        save_strategy="epoch",
+        logging_strategy="steps",
+        logging_steps=50,
+        evaluation_strategy="epoch",
+        load_best_model_at_end=True,
+        report_to="none",
     )
+
     trainer = Trainer(
         model=model,
         args=args,
-        train_dataset=tok_ds,
+        train_dataset=tok_train,
+        eval_dataset=tok_val,
         data_collator=collator,
     )
+
     trainer.train()
+    return trainer
 
 
 def scaled_dot_product_attention(q, k, v):
