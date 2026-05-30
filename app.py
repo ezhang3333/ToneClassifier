@@ -3,9 +3,7 @@ import torch
 from transformers import GPT2LMHeadModel, GPT2ForSequenceClassification
 from gpt_2_utils import prompt_zero, TOKENIZER, YES_ID, NO_ID, MODEL_NAME
 
-# ----------------------------
 # Load models once (cached)
-# ----------------------------
 @st.cache_resource
 def load_seq2seq():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -22,20 +20,15 @@ def load_clf():
     model.eval()
     return model, device
 
-# ----------------------------
-# Streamlit UI Config
-# ----------------------------
 st.set_page_config(page_title="GPT-2 Sentiment App", page_icon="🤖", layout="wide")
 
 # Initialize session state for review history
 if "history" not in st.session_state:
     st.session_state.history = []
 
-# Main area
-st.title("🤖 GPT-2 Sentiment Classifier")
-st.write("Paste a review and choose how GPT-2 should classify it.")
+st.title("Sentiment Classifier")
+st.write("Paste a review and choose which model should classify it.")
 
-# Input box (no validation highlight)
 user_input = st.text_area("✍️ Enter your review:", "")
 
 # Mode selector
@@ -85,9 +78,8 @@ if st.button("Classify"):
             "prediction": sentiment
         })
 
-# Sidebar = Review History (always pinned at top)
 with st.sidebar:
-    st.title("📜 Review History")
+    st.title("Review History")
     pinned = st.container()  # this keeps it fixed at the top
 
     with pinned:
@@ -100,4 +92,4 @@ with st.sidebar:
 
 # Footer
 st.markdown("---")
-st.markdown("💬 Powered by **GPT-2** · Zero-shot + Fine-tuned modes")
+st.markdown("Powered by **GPT-2** · Zero-shot + Fine-tuned modes")

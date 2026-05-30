@@ -39,8 +39,6 @@ def prompt_zero(text):
     )
 
 
-# Sentiment classification (zero-shot seq2seq) 
-# Returns: (average NLL over the dataset, classification accuracy)
 def eval_seq2seq(ds, lm):
     lm.eval()
     dev = next(lm.parameters()).device
@@ -67,8 +65,6 @@ def eval_seq2seq(ds, lm):
     return avg_nll, accuracy
 
 
-# Evaluate a GPT-2 classification head ona  sentiment dataset
-# Returns: (average loss, classification accuracy)
 def eval_clf(ds, model, tokenize_clf):
     model.eval()
     dev = next(model.parameters()).device
@@ -105,8 +101,6 @@ def eval_clf(ds, model, tokenize_clf):
     return avg_loss, accuracy
 
 
-# Evaluate a sentiment-analysis model on the trainng set to examine whether the training is implemented correctly
-# Returns a tuple (loss, accuracy) on the test set
 def eval_model(model, tokenize_clf=None):
     test_set = load_classification_data("classification_train.txt")
 

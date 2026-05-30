@@ -76,13 +76,13 @@ DEVICE = (
     torch.device("cuda") if torch.cuda.is_available()
     else torch.device("cpu")
 )
-# Do Not modify the following Constants
+
 MODEL_NAME = "gpt2"
 TOKENIZER = GPT2Tokenizer.from_pretrained(MODEL_NAME)
 TOKENIZER.pad_token = TOKENIZER.eos_token
 TOKENIZER.pad_token_id = TOKENIZER.eos_token_id
 YES_ID, NO_ID = TOKENIZER.encode(" yes")[0], TOKENIZER.encode(" no")[0]
-MAX_LEN = 200   # maximum total length (prompt + answer + pads)
+MAX_LEN = 200
 
 
 def build_prompt_with_answer(ex):
@@ -111,7 +111,7 @@ def tokenize_seq2seq(batch):
         pad_len = MAX_LEN - len(tok)
         ids = tok + [TOKENIZER.pad_token_id] * pad_len
         mask = [1] * len(tok) + [0] * pad_len
-        # labels: ignore all but final actual token
+
         lab = [-100] * MAX_LEN
         lab[len(tok) - 1] = tok[-1]
         input_ids.append(ids)
@@ -147,15 +147,15 @@ def train_seq2seq(train_ds, lm: GPT2LMHeadModel, seed=SEED):
         output_dir="./seq2seq",
         per_device_train_batch_size=8,
         gradient_accumulation_steps=4,
-        learning_rate=5e-5,            # smaller LR
+        learning_rate=5e-5,
         weight_decay=0.01,
-        num_train_epochs=3,            # train longer
+        num_train_epochs=3,
         save_strategy="epoch",
         logging_strategy="steps",
         logging_steps=50,
         evaluation_strategy="epoch",
         load_best_model_at_end=True,
-        report_to="none",              # disable wandb if not used
+        report_to="none",
     )
 
     trainer = Trainer(
@@ -176,7 +176,7 @@ def tokenize_clf(batch):
         batch["content"],
         truncation=True,
         max_length=MAX_LEN,
-        padding=False,           # we let the DataCollator pad
+        padding=False,
         return_attention_mask=True,
     )
     return {
